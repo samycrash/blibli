@@ -110,7 +110,6 @@ def save_file_xlsx(data, nama_file):
     print(conv_file)
     print('file was being saved successfully')
     
-
 def main_prog():  
     global run  
     while run:
