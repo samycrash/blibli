@@ -1,7 +1,7 @@
 import requests
 import json
 import time
-
+import pandas as pd
 
 def calling_page(pages=1, keywords='', offset=0, item_need=0): 
     load_page = True
@@ -46,6 +46,7 @@ def calling_page(pages=1, keywords='', offset=0, item_need=0):
 
             try:
                 review = float(products[item]['review']['absoluteRating'])
+                rating = round(review, 1)
             except KeyError:
                 review = '-'
 
@@ -68,7 +69,7 @@ def calling_page(pages=1, keywords='', offset=0, item_need=0):
                 'harga' : product_price,
                 'harga-sebelum-diskon' : price_before,
                 'diskon' : discount,
-                'rating' : review,
+                'rating' : rating,
                 'terjual' : terjual,
                 'link-produk' : link
             }
@@ -103,33 +104,52 @@ def calling_page(pages=1, keywords='', offset=0, item_need=0):
             start_point = start_point+40            
         time.sleep(5)
 
+def save_file_xlsx(data, nama_file):
+    conv_file = pd.DataFrame(data)
+    conv_file.to_excel(f'{nama_file}.xlsx', index= None)
+    print(conv_file)
+    print('file was being saved successfully')
+    
 
-run = True
-while run:
-    search_item = input('masukkan barang yang dicari: ')
-    while True:
-        try:
-            opsi_show_item = int(input('opsi tampilan [(1)tampilkan per halaman (2)sesuai banyak item yang dibutuhkan] (1)/(2)?: '))
-            break
-        except ValueError:
-            print('masukkan opsi "1" atau opsi "2" ')
-    if opsi_show_item==2:
+def main_prog():  
+    global run  
+    while run:
+        search_item = input('masukkan barang yang dicari: ')
         while True:
             try:
-                need_item = int(input('masukkan banyak item: '))
-                App_bot = calling_page(keywords=search_item, item_need= need_item)
+                opsi_show_item = int(input('opsi tampilan [(1)tampilkan per halaman (2)sesuai banyak item yang dibutuhkan] (1)/(2)?: '))
                 break
             except ValueError:
-                print('masukkan hanya data angka!!!')
-    if opsi_show_item== 1:
-        App_bot = calling_page(keywords=search_item)
-    items =[]
-    for data in App_bot:
-        items.append(data)
-        print(f'({len(items)}) {data}')        
+                print('masukkan opsi "1" atau opsi "2" ')
+        if opsi_show_item==2:
+            while True:
+                try:
+                    need_item = int(input('masukkan banyak item: '))
+                    App_bot = calling_page(keywords=search_item, item_need= need_item)
+                    break
+                except ValueError:
+                    print('masukkan hanya data angka!!!')
+        if opsi_show_item== 1:
+            App_bot = calling_page(keywords=search_item)
+        items =[]
+        for data in App_bot:
+            items.append(data)
+            print(f'({len(items)}) {data}')        
 
-    running_back = input('cari barang yang lain? (y/n): ')
-    if running_back== 'y':
-        run = True
-    else:
-        run = False
+        save_confirmation = input('simpan file? (y/n) :')
+        if save_confirmation =='y':
+            name_file = input('masukkan nama file : ')
+            save_file_xlsx(data=items, nama_file= name_file)
+
+        running_back = input('cari barang yang lain? (y/n): ')
+        if running_back== 'y':
+            run = True
+        else:
+            run = False
+            print('closing application ...')
+            time.sleep(3)
+
+if  "__main__" == __name__:    
+    run = True
+    main_prog()
+    
